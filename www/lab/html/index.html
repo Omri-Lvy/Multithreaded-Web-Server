@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer networks 2023: Lab</title>
+    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+    <style>
+        body {
+            background-color: #f2f2f2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0.75rem 2rem;
+            font-family: Tahoma, Arial, sans-serif;
+            gap: 2rem;
+        }
+        h1 {
+            margin: 0.5rem auto;
+            color: #4593df;
+            animation: moveTitle 3s linear infinite alternate;
+        }
+        h2 {
+            margin: 0.5rem auto;
+            color: #df454a;
+            font-size: 2.5em;
+        }
+        hr {
+            width: 100%;
+            border: 0.01em solid rgba(0, 0, 0, 0.3);
+        }
+        .images-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            width: 100%;
+            gap: 2rem;
+            max-height: 400px;
+        }
+        .image {
+            max-width: 45%;
+            border-radius: 1rem;
+            object-fit: cover;
+            box-shadow: rgba(100, 100, 111, 0.2) 0 7px 29px 0;
+        }
+        .links-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            align-items: center;
+            width: 100%;
+            gap: 2rem
+        }
+        .link {
+            flex: 1;
+            font-size: 1.25em;
+            letter-spacing: 0.0875rem;
+            transition: all 0.2s ease-in-out;
+            padding: 0.25rem 0.5rem;
+            border: 0.1rem solid rgba(0, 0, 0, 0.3);
+            border-radius: 0.5rem;
+            background-color: rgba(167, 199, 231, 0.5);
+            text-decoration: none;
+            text-align: center;
+            box-shadow: rgba(100, 100, 111, 0.2) 0 7px 29px 0;
+            color: #444;
+        }
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            align-items: center;
+            width: 60%;
+            gap: 1rem;
+        }
+        .input-container, .checkbox-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+            width: 100%;
+            gap: 0.1rem;
+        }
+        .checkbox-container {
+            flex-direction: row;
+            justify-content: flex-start;
+            align-items: center;
+        }
+        .input-container label,
+        .checkbox-container label {
+            font-weight: 600;
+        }
+        .input-container input, .input-container textarea {
+            width: 100%;
+            border-radius: 0.5rem;
+            border: 0.1rem solid rgba(0, 0, 0, 0.3);
+            padding: 0.25rem;
+            font-size: 1.25em;
+            box-sizing:border-box
+        }
+        .input-container textarea {
+            resize: none;
+            height: 5rem;
+        }
+        .submit-btn {
+            width: 100%;
+            margin: auto;
+            border-radius: 0.5rem;
+            border: 0.1rem solid rgba(0, 0, 0, 0.3);
+            padding: 0.25rem;
+            font-size: 1.5em;
+            background-color: rgba(167, 199, 231, 0.5);
+            color: #333;
+            font-weight: 600;
+            cursor: pointer;
+            transition:  transform 0.2s ease-in-out;
+        }
+        .submit-btn:hover, .link:hover {
+            transform: scale(1.005);
+            color: #222;
+            border: 0.1rem solid rgba(0, 0, 0, 0.8);
+        }
+        @keyframes moveTitle {
+            from {
+                transform: translateX(-200px);
+            }
+
+            to {
+                transform: translateX(200px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 class="main-title">Computer networks 2023: Lab</h1>
+    <h2>Gil Tetro & Omri Levy</h2>
+    <div class="images-container">
+        <img class="image" src="./image1.jpg" alt="labrador puppy">
+        <img class="image" src="./image2.jpg" alt="labrador puppies with a guide dog">
+    </div>
+    <div class="links-container">
+        <a class="link" href="https://moodle.runi.ac.il/2024/course/view.php?id=2401572">Course website</a>
+        <a class="link" href="https://stackoverflow.com/">Our favorite website</a>
+    </div>
+    <hr>
+    <form class="form-container" action="/params-info" method="POST">
+        <div class="input-container">
+            <label for="sender">Sender:</label>
+            <input type="text" id="sender" name="sender"/>
+        </div>
+        <div class="input-container">
+            <label for="receiver">Receiver:</label>
+            <input type="text" id="receiver" name="receiver"/>
+        </div>
+        <div class="input-container">
+            <label for="subject">Subject:</label>
+            <input type="text" id="subject" name="subject"/>
+        </div>
+        <div class="checkbox-container">
+            <label for="termsAndConditions">Agree terms and conditions:</label>
+            <input type="checkbox" id="termsAndConditions" name="agree-terms-and-conditions"/>
+        </div>
+        <div class="input-container">
+            <label for="message">Message:</label>
+            <textarea id="message" name="message"></textarea>
+        </div>
+        <button type="submit" class="submit-btn">Send</button>
+    </form>
+</body>
+</html>

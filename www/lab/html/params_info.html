@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer networks 2023: Lab - Params Details</title>
+    <style>
+        body {
+            background-color: #f2f2f2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0.75rem 2rem;
+            font-family: Tahoma, Arial, sans-serif;
+            gap: 2rem;
+        }
+        h1 {
+            margin: 0.5rem auto;
+            color: #4593df;
+            animation: moveTitle 3s linear infinite alternate;
+        }
+        h2 {
+            margin: 0.5rem auto;
+            color: #df454a;
+            font-size: 2.5em;
+        }
+        .params-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+            width: 100%;
+            gap: 1rem;
+        }
+        .param-item {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            align-items: center;
+            width: max-content;
+            gap: 0.25rem;
+            list-style: none;
+
+        }
+        .param-name {
+            text-transform: capitalize;
+        }
+
+    </style>
+</head>
+<body>
+    <h1 class="main-title">Computer networks 2023: Lab</h1>
+    <h2 class="sub-title">Params Details</h2>
+    <ul class="params-container">
+        <li class="param-item">
+            <span class="param-name">Sender:</span>
+            <span class="param-value">{{sender}}</span>
+        </li>
+        <li class="param-item">
+            <span class="param-name">Receiver:</span>
+            <span class="param-value">{{receiver}}</span>
+        </li>
+        <li class="param-item">
+            <span class="param-name">Subject:</span>
+            <span class="param-value">{{subject}}</span>
+        </li>
+        <li class="param-item">
+            <span class="param-name">Agree terms and conditions:</span>
+            <span class="param-value">{{agree-terms-and-conditions}}</span>
+        </li>
+        <li class="param-item">
+            <span class="param-name">Message:</span>
+            <span class="param-value">{{message}}</span>
+        </li>
+    </ul>
+</body>
+</html>
