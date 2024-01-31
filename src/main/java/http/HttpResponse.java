@@ -14,7 +14,8 @@ public class HttpResponse {
                 "Content-Type: " + contentType + CRLF +
                 "Content-Length: " + content.length + CRLF +
                 CRLF;
-        if (request.getHeader("chunked").equals("yes")) {
+        String chunkedHeader = request.getHeader("chunked");
+        if (chunkedHeader != null && chunkedHeader.equals("yes")) {
             header = HttpVersion.HTTP_1_1 + " " + statusCode + CRLF +
                     "Content-Type: " + contentType + CRLF +
                     "Transfer-Encoding: chunked" + CRLF +
