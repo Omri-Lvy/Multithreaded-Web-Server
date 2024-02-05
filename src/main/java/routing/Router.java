@@ -11,6 +11,7 @@ import http.HttpRequest;
 
 import java.io.File;
 import java.io.OutputStream;
+import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 import java.lang.reflect.Method;
@@ -29,25 +30,29 @@ public class Router {
 
     public void defineRoutes (Object handler) {
         for (Method method : handler.getClass().getDeclaredMethods()) {
-            if (method.isAnnotationPresent(GET.class)) {
-                String route = method.getAnnotation(GET.class).value();
-                routes.put(HttpMethod.GET + route, handler);
-            } else if (method.isAnnotationPresent(POST.class)) {
-                String route = method.getAnnotation(POST.class).value();
-                routes.put(HttpMethod.POST + route, handler);
-            } else if (method.isAnnotationPresent(HEAD.class)) {
-                String route = method.getAnnotation(HEAD.class).value();
-                routes.put(HttpMethod.HEAD + route, handler);
-            } else if (method.isAnnotationPresent(TRACE.class)) {
-                String route = method.getAnnotation(TRACE.class).value();
-                routes.put(HttpMethod.TRACE + route, handler);
+            Annotation[] annotations = method.getDeclaredAnnotations();
+            for (Annotation annotation : annotations) {
+                if (annotation.annotationType().equals(GET.class)) {
+                    String route = ((GET) annotation).value();
+                    routes.put(HttpMethod.GET + route, handler);
+                } else if (annotation.annotationType().equals(POST.class)) {
+                    String route = ((POST) annotation).value();
+                    routes.put(HttpMethod.POST + route, handler);
+                } else if (annotation.annotationType().equals(HEAD.class)) {
+                    String route = ((HEAD) annotation).value();
+                    routes.put(HttpMethod.HEAD + route, handler);
+                } else if (annotation.annotationType().equals(TRACE.class)) {
+                    String route = ((TRACE) annotation).value();
+                    routes.put(HttpMethod.TRACE + route, handler);
+                }
             }
         }
     }
 
     public void router (HttpRequest request, OutputStream outputStream) {
         String path = request.getRequestTarget();
-        Object handler = routes.get(request.getMethod().toString()+path);
+        String route = request.getMethod().toString() + path;
+        Object handler = routes.get(route);
         if (handler == null) {
             handler = routes.get(request.getMethod().toString()+"/*");
         }
@@ -68,46 +73,46 @@ public class Router {
     }
 
     private void invokeHandlerMethod (Object handler, HttpRequest request, OutputStream outputStream, File requestedResource) throws HttpProcessingException {
-        Object[] args = null;
-        Method methodToInvoke = null;
         Method[] methods = handler.getClass().getDeclaredMethods();
         try {
             for (Method method : methods) {
-                String routeAnnotation = getRouteAnnotation(method);
-                HttpMethod methodAnnotation = getMethodAnnotation(method);
-                if ((request.getRequestTarget().equals(routeAnnotation)) && (request.getMethod().equals(methodAnnotation))) {
-                    args = switch (method.getName()) {
-                        case "index" -> new Object[]{request, rootDirectory, defaultPage, outputStream };
-                        case "paramsInfo" -> new Object[]{request, rootDirectory, outputStream };
-                        default -> args;
-                    };
-                    methodToInvoke = method;
-                    break;
+                Annotation[] annotations = method.getDeclaredAnnotations();
+                for (Annotation annotation : annotations) {
+                    String routeAnnotation = getRouteAnnotation(method);
+                    HttpMethod methodAnnotation = getMethodAnnotation(annotation);
+                    if (routeMatches(request, routeAnnotation) && methodMatches(request.getMethod(), methodAnnotation)) {
+                        Object[] args = getArguments(method, request, outputStream, requestedResource);
+                        method.invoke(handler, args);
+                        return;
+                    }
                 }
             }
-            if (methodToInvoke == null) {
-                if (request.getMethod().equals(HttpMethod.GET)) {
-                    args = new Object[]{request, outputStream, requestedResource};
-                    methodToInvoke = handler.getClass().getMethod("getFile", HttpRequest.class, OutputStream.class, File.class);
-                } else if (request.getMethod().equals(HttpMethod.HEAD)) {
-                    args = new Object[]{request, outputStream, requestedResource};
-                    methodToInvoke = handler.getClass().getMethod("getHeaders", HttpRequest.class, OutputStream.class, File.class);
-                } else if (request.getMethod().equals(HttpMethod.TRACE)) {
-                    args = new Object[]{outputStream, request};
-                    methodToInvoke = handler.getClass().getMethod("trace", OutputStream.class, HttpRequest.class);
-                }
-            }
-            if (methodToInvoke != null) {
-                methodToInvoke.invoke(handler, args);
-                return;
-            }
+
             throw new HttpProcessingException(HttpStatusCode.NOT_FOUND);
         } catch (Exception e) {
             throw new HttpProcessingException(HttpStatusCode.INTERNAL_SERVER_ERROR);
         }
     }
 
-    private static String getRouteAnnotation (Method method) {
+    private boolean routeMatches(HttpRequest request, String routeAnnotation) {
+        return routeAnnotation.equals(request.getRequestTarget());
+    }
+
+    private boolean methodMatches(HttpMethod requestMethod, HttpMethod methodAnnotation) {
+        return requestMethod.equals(methodAnnotation);
+    }
+
+    private Object[] getArguments(Method method, HttpRequest request, OutputStream outputStream, File requestedResource) {
+        return switch (method.getName()) {
+            case "index" -> new Object[]{ request, rootDirectory, defaultPage, outputStream };
+            case "paramsInfo", "getparamsInfo" -> new Object[]{ request, rootDirectory, outputStream };
+            case "getFile", "getHeaders" -> new Object[]{ request, outputStream, requestedResource };
+            case "trace" -> new Object[]{ outputStream, request };
+            default -> null;
+        };
+    }
+
+    private static String getRouteAnnotation(Method method) {
         String routeAnnotation = null;
         if (method.isAnnotationPresent(GET.class)) {
             routeAnnotation = method.getAnnotation(GET.class).value();
@@ -121,18 +126,16 @@ public class Router {
         return routeAnnotation;
     }
 
-    private static HttpMethod getMethodAnnotation (Method method) {
+    private static HttpMethod getMethodAnnotation (Annotation annotation) {
         HttpMethod methodAnnotation = null;
-        if (method.isAnnotationPresent(GET.class)) {
-            methodAnnotation = HttpMethod.GET;
-        } else if (method.isAnnotationPresent(POST.class)) {
-            methodAnnotation = HttpMethod.POST;
-        } else if (method.isAnnotationPresent(HEAD.class)) {
-            methodAnnotation = HttpMethod.HEAD;
-        } else if (method.isAnnotationPresent(TRACE.class)) {
-            methodAnnotation = HttpMethod.TRACE;
-        }
+        String annotationType = annotation.annotationType().getCanonicalName().split("\\.")[1];
+        methodAnnotation = switch (annotationType) {
+            case "GET" -> HttpMethod.GET;
+            case "POST" -> HttpMethod.POST;
+            case "HEAD" -> HttpMethod.HEAD;
+            case "TRACE" -> HttpMethod.TRACE;
+            default -> methodAnnotation;
+        };
         return methodAnnotation;
     }
-
 }

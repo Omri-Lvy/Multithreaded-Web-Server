@@ -148,10 +148,17 @@ public class HttpRequestParser {
                 // Handle the case where Content-Length is not a valid integer
                 throw new HttpParsingException(HttpStatusCode.BAD_REQUEST);
             }
+        } else {
+            if (request.getRequestTarget().contains("?")) {
+                request.setBody(parseURLParams(request.getRequestTarget()));
+                String requestTarget = request.getRequestTarget().substring(0, request.getRequestTarget().indexOf("?"));
+                request.setRequestTarget(requestTarget);
+            }
         }
     }
 
-    public static Map<Object, Object> parseUrlEncodedBody(String body) {
+
+    private static Map<Object, Object> parseUrlEncodedBody(String body) {
         Map<Object, Object> formData = new HashMap<>();
         String[] pairs = body.split("&");
 
@@ -170,8 +177,24 @@ public class HttpRequestParser {
         return formData;
     }
 
-    public static Map parseJsonBody( String body) throws JsonProcessingException {
+    private static Map parseJsonBody( String body) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.readValue(body, Map.class);
+    }
+
+    private static Map parseURLParams(String requestLine) {
+        Map<Object, Object> params = new HashMap<>();
+        String paramsString = requestLine.substring(requestLine.indexOf("?") + 1);
+        String[] pairs = paramsString.split("&");
+
+        for (String pair : pairs) {
+            String[] keyValue = pair.split("=");
+            if (keyValue.length == 2) {
+                params.put(keyValue[0], keyValue[1]);
+            } else {
+                params.put(keyValue[0], "");
+            }
+        }
+        return params;
     }
 }

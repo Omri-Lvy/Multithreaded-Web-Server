@@ -4,17 +4,19 @@ import enums.HttpMethod;
 import enums.HttpStatusCode;
 import exceptions.HttpParsingException;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class HttpRequest extends HttpMessage{
     private HttpMethod method;
     private String requestTarget;
     private Map<String, String> headers;
-    private Map body;
-    private String clientAddress;
+    private final Map body;
+    private final String clientAddress;
 
     public HttpRequest(String clientAddress) {
         this.clientAddress = clientAddress;
+        this.body = new HashMap();
     }
 
     public HttpMethod getMethod() {
@@ -63,7 +65,7 @@ public class HttpRequest extends HttpMessage{
     }
 
     public void setBody(Map body) {
-        this.body = body;
+        this.body.putAll(body);
     }
 
 

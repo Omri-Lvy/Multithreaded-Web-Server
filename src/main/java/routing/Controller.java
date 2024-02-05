@@ -34,23 +34,56 @@ public class Controller {
     }
 
     @POST("/params-info")
+    @GET("/params-info")
     public void paramsInfo(HttpRequest request, String rootDirectory, OutputStream outputStream) {
         Map params = request.getBody();
         File htmlPage = new File(rootDirectory + "/params_info.html");
+        StringBuilder paramsHTML = new StringBuilder();
         try {
             if (htmlPage.exists()) {
                 byte[] htmlContent = Files.readAllBytes(htmlPage.toPath());
                 String html = new String(htmlContent);
                 for (Object key : params.keySet()) {
-                    if (key.equals("agree-terms-and-conditions")) {
-                        html = html.replace("{{" + key + "}}", "True");
-                    } else {
-                        html = html.replace("{{" + key + "}}", params.get(key).toString());
-                    }
+                    paramsHTML.append("<li class=\"param-item\">")
+                            .append("<span class=\"param-name\">")
+                            .append(key.toString().substring(0, 1).toUpperCase()).append(key.toString().substring(1)).append(": ")
+                            .append("</span>")
+                            .append("<span class=\"param-value\">")
+                            .append(params.get(key).toString())
+                            .append("</span>")
+                            .append("</li>");
                 }
-                if (!params.containsKey("agree-terms-and-conditions")) {
-                    html = html.replace("{{agree-terms-and-conditions}}", "False");
+                html = html.replace("{{params}}", paramsHTML.toString());
+                HttpResponse.sendResponse(request, outputStream, HttpStatusCode.OK, ContentType.HTML, html.getBytes());
+            } else {
+                HttpResponse.sendErrorResponse(request, outputStream, HttpStatusCode.NOT_FOUND);
+            }
+        } catch (IOException e) {
+            HttpResponse.sendErrorResponse(request, outputStream, HttpStatusCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GET("/params_info.html")
+    @POST("/params_info.html")
+    public void getparamsInfo(HttpRequest request, String rootDirectory, OutputStream outputStream) {
+        Map params = request.getBody();
+        File htmlPage = new File(rootDirectory + "/params_info.html");
+        StringBuilder paramsHTML = new StringBuilder();
+        try {
+            if (htmlPage.exists()) {
+                byte[] htmlContent = Files.readAllBytes(htmlPage.toPath());
+                String html = new String(htmlContent);
+                for (Object key : params.keySet()) {
+                    paramsHTML.append("<li class=\"param-item\">")
+                            .append("<span class=\"param-name\">")
+                            .append(key.toString().substring(0, 1).toUpperCase()).append(key.toString().substring(1)).append(": ")
+                            .append("</span>")
+                            .append("<span class=\"param-value\">")
+                            .append(params.get(key).toString())
+                            .append("</span>")
+                            .append("</li>");
                 }
+                html = html.replace("{{params}}", paramsHTML.toString());
                 HttpResponse.sendResponse(request, outputStream, HttpStatusCode.OK, ContentType.HTML, html.getBytes());
             } else {
                 HttpResponse.sendErrorResponse(request, outputStream, HttpStatusCode.NOT_FOUND);
