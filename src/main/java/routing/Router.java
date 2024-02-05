@@ -87,6 +87,22 @@ public class Router {
                     }
                 }
             }
+            Method methodToInvoke = null;
+            Object[] args = null;
+            if (request.getMethod().equals(HttpMethod.GET)) {
+                args = new Object[] {request, outputStream, requestedResource};
+                methodToInvoke = handler.getClass().getMethod("getFile", HttpRequest.class, OutputStream.class, File.class);
+            } else if (request.getMethod().equals(HttpMethod.HEAD)) {
+                args = new Object[] {request, outputStream, requestedResource};
+                methodToInvoke = handler.getClass().getMethod("getHeaders", HttpRequest.class, OutputStream.class, File.class);
+            } else if (request.getMethod().equals(HttpMethod.TRACE)) {
+                args = new Object[] {outputStream, request};
+                methodToInvoke = handler.getClass().getMethod("trace", OutputStream.class, HttpRequest.class);
+            }
+            if (methodToInvoke != null) {
+                methodToInvoke.invoke(handler, args);
+                return;
+            }
             throw new HttpProcessingException(HttpStatusCode.NOT_FOUND);
         } catch (Exception e) {
             throw new HttpProcessingException(HttpStatusCode.INTERNAL_SERVER_ERROR);
@@ -94,7 +110,7 @@ public class Router {
     }
 
     private boolean routeMatches(HttpRequest request, String routeAnnotation) {
-        return routeAnnotation.equals(request.getRequestTarget()) || routeAnnotation.equals("/*");
+        return routeAnnotation.equals(request.getRequestTarget());
     }
 
     private boolean methodMatches(HttpMethod requestMethod, HttpMethod methodAnnotation) {
