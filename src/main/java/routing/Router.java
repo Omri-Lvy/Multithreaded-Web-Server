@@ -87,7 +87,6 @@ public class Router {
                     }
                 }
             }
-
             throw new HttpProcessingException(HttpStatusCode.NOT_FOUND);
         } catch (Exception e) {
             throw new HttpProcessingException(HttpStatusCode.INTERNAL_SERVER_ERROR);
@@ -95,7 +94,7 @@ public class Router {
     }
 
     private boolean routeMatches(HttpRequest request, String routeAnnotation) {
-        return routeAnnotation.equals(request.getRequestTarget());
+        return routeAnnotation.equals(request.getRequestTarget()) || routeAnnotation.equals("/*");
     }
 
     private boolean methodMatches(HttpMethod requestMethod, HttpMethod methodAnnotation) {
