@@ -1,9 +1,6 @@
 package config;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Properties;
 
 public class ConfigurationManager {
@@ -12,7 +9,7 @@ public class ConfigurationManager {
 
     private ConfigurationManager() throws IOException {
         configuration = new Configuration();
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("config.ini")) {
+        try (InputStream inputStream = new FileInputStream("config.ini")) {
             Properties properties = new Properties();
             properties.load(inputStream);
             configuration.setPort(Integer.parseInt(properties.getProperty("port")));
