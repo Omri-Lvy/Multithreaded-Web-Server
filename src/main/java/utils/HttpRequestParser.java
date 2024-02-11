@@ -1,6 +1,5 @@
 package utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import enums.HttpMethod;
 import enums.HttpStatusCode;
 import exceptions.HttpParsingException;
@@ -13,7 +12,6 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class HttpRequestParser {
     private static final int SP = 0x20; // 32
@@ -131,10 +129,12 @@ public class HttpRequestParser {
                 if (bytesRead == contentLength) {
                     String requestBody = new String(bodyData);
                     if (contentTypeHeader != null) {
-                        if (contentTypeHeader.equals("application/json")) {
-                            request.setBody(parseJsonBody(requestBody));
-                        } else if (contentTypeHeader.equals("application/x-www-form-urlencoded")) {
+                        if (contentTypeHeader.equals("application/x-www-form-urlencoded")) {
                             request.setBody(parseUrlEncodedBody(requestBody));
+                        } else if (contentTypeHeader.equals("application/json")) {
+                            request.setBody(parseJsonBody(requestBody));
+                        } else {
+                            request.setBody(parseBodyText(requestBody));
                         }
                     } else {
                         throw new HttpParsingException(HttpStatusCode.BAD_REQUEST);
@@ -176,9 +176,45 @@ public class HttpRequestParser {
         return formData;
     }
 
-    private static Map parseJsonBody( String body) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readValue(body, Map.class);
+    private static Map<Object, Object> parseBodyText(String body) {
+        Map<Object, Object> bodyFields = new HashMap<>();
+        String[] pairs = body.split("\n");
+
+        for (String pair : pairs) {
+            String[] keyValue = pair.split(":");
+            if (keyValue[0].equals("{") || keyValue[0].equals("}")) {
+                continue;
+            }
+            if (keyValue.length == 2) {
+                String key = URLDecoder.decode(removeQuotes(keyValue[0]), StandardCharsets.UTF_8);
+                String value = URLDecoder.decode(removeQuotes(keyValue[1]), StandardCharsets.UTF_8);
+                bodyFields.put(key, value);
+            } else {
+                String key = URLDecoder.decode(keyValue[0].replaceAll("\"",""), StandardCharsets.UTF_8);
+                bodyFields.put(key, "");
+            }
+        }
+
+        return bodyFields;
+    }
+
+    private static Map<Object, Object> parseJsonBody(String body) {
+        body = body.substring(1, body.length() - 1).replaceAll("\n","");
+        Map<Object, Object> formData = new HashMap<>();
+        String[] pairs = body.split(",");
+        for (String pair : pairs) {
+            String[] keyValue = pair.split(":");
+            if (keyValue.length == 2) {
+                String key = URLDecoder.decode(removeQuotes(keyValue[0]), StandardCharsets.UTF_8);
+                String value = URLDecoder.decode(removeQuotes(keyValue[1]), StandardCharsets.UTF_8);
+                formData.put(key, value);
+            } else {
+                String key = URLDecoder.decode(keyValue[0].substring(1, keyValue[0].length() - 2), StandardCharsets.UTF_8);
+                formData.put(key, "");
+            }
+        }
+
+        return formData;
     }
 
     private static Map parseURLParams(String requestLine) {
@@ -195,5 +231,9 @@ public class HttpRequestParser {
             }
         }
         return params;
+    }
+
+    private static String removeQuotes(String string) {
+        return string.substring(0, string.indexOf("\"")) + string.substring(string.indexOf("\"") + 1,string.lastIndexOf("\""));
     }
 }
