@@ -2,16 +2,18 @@ package http;
 
 import enums.HttpMethod;
 import enums.HttpStatusCode;
+import enums.HttpVersion;
 import exceptions.HttpParsingException;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class HttpRequest extends HttpMessage{
+public class HttpRequest {
     private HttpMethod method;
     private String requestTarget;
     private Map<String, String> headers;
     private final Map body;
+    private HttpVersion version;
     private final String clientAddress;
 
     public HttpRequest(String clientAddress) {
@@ -33,6 +35,14 @@ public class HttpRequest extends HttpMessage{
 
     public String getHeader(String headerName) {
         return headers.get(headerName);
+    }
+
+    public void setVersion ( String version ) throws HttpParsingException {
+        this.version = HttpVersion.getVersion(version);
+    }
+
+    public HttpVersion getVersion() {
+        return version;
     }
 
     public Map getBody() {
