@@ -2,9 +2,14 @@ package enums;
 
 public enum HttpMethod {
     GET,
-    POST,
     HEAD,
-    TRACE;
+    POST,
+    PUT,
+    DELETE,
+    CONNECT,
+    OPTIONS,
+    TRACE,
+    PATCH;
 
     public static final int MAX_LENGTH;
 

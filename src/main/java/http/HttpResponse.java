@@ -49,6 +49,16 @@ public class HttpResponse {
         sendResponse(header, new byte[]{}, outputStream);
     }
 
+    public static void sendErrorResponseFailedParseRequest(String clientAddress, OutputStream outputStream, HttpStatusCode statusCode) {
+        String CRLF = "\r\n";
+        String header = HttpVersion.HTTP_1_1 + " " + statusCode + CRLF +
+                "Content-Type: " + ContentType.DEFAULT + CRLF +
+                "Content-Length: " + 0 + CRLF +
+                CRLF;
+        System.out.print("Response to: " + clientAddress + "\r\n" + header);
+        sendResponse(header, new byte[]{}, outputStream);
+    }
+
     private static void sendChunkedResponse(String header, OutputStream outputStream, byte[] content) {
         String CRLF = "\r\n";
         try {

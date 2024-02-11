@@ -37,7 +37,6 @@ public class HttpRequestParser {
     public HttpRequest parseHttpRequest (byte[] requestBytes, String clientAddress) throws HttpParsingException {
         HttpRequest request = new HttpRequest(clientAddress);
         parseHttpRequest(request, requestBytes);
-
         return request;
     }
 

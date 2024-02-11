@@ -4,6 +4,7 @@ public class Configuration {
     private int port;
     private int maxThreads;
     private String rootDirectory;
+    private String rootDirectoryCanonicalPath;
     private String defaultPage;
 
     public int getPort () {
@@ -28,6 +29,12 @@ public class Configuration {
     public void setRootDirectory ( String rootDirectory ) {
         this.rootDirectory = rootDirectory;
     }
+
+    public String getRootDirectoryCanonicalPath () {
+        return rootDirectoryCanonicalPath;
+    }
+
+    public void setRootDirectoryCanonicalPath ( String rootDirectoryCanonicalPath ) { this.rootDirectoryCanonicalPath = rootDirectoryCanonicalPath; }
 
     public String getDefaultPage () {
         return defaultPage;

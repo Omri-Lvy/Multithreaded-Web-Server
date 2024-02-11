@@ -50,7 +50,8 @@ public class HttpRequest extends HttpMessage{
                 return;
             }
         }
-        throw new HttpParsingException(HttpStatusCode.NOT_IMPLEMENTED);
+
+        throw new HttpParsingException(HttpStatusCode.BAD_REQUEST);
     }
 
     public void setRequestTarget ( String requestTarget ) throws HttpParsingException {

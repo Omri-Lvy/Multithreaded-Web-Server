@@ -1,5 +1,6 @@
 package config;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,6 +19,14 @@ public class ConfigurationManager {
             configuration.setMaxThreads(Integer.parseInt(properties.getProperty("maxThreads")));
             configuration.setRootDirectory(properties.getProperty("root"));
             configuration.setDefaultPage(properties.getProperty("defaultPage"));
+
+            try {
+                File rootDir = new File(configuration.getRootDirectory());
+                configuration.setRootDirectoryCanonicalPath(rootDir.getCanonicalPath() + File.separator);
+            } catch (java.io.IOException e) {
+                System.out.println("Could not resolve root directory: " + e.getMessage());
+                System.exit(1);
+            }
         } catch (FileNotFoundException e) {
             System.out.println("Config file not found");
             System.exit(1);

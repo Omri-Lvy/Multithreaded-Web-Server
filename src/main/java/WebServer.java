@@ -13,7 +13,7 @@ public class WebServer {
             ServerListener serverListener = new ServerListener(
                     configuration.getPort(),
                     configuration.getMaxThreads(),
-                    configuration.getRootDirectory(),
+                    configuration.getRootDirectoryCanonicalPath(),
                     configuration.getDefaultPage()
             );
             System.out.println("Server started on port " + configuration.getPort());

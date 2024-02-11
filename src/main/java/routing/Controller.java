@@ -5,6 +5,7 @@ import annotations.HEAD;
 import annotations.POST;
 import annotations.TRACE;
 import enums.ContentType;
+import enums.HttpMethod;
 import enums.HttpStatusCode;
 import http.HttpRequest;
 import http.HttpResponse;
@@ -35,6 +36,7 @@ public class Controller {
 
     @POST("/params-info")
     @GET("/params-info")
+    @HEAD("/params-info")
     public void paramsInfo(HttpRequest request, String rootDirectory, OutputStream outputStream) {
         Map params = request.getBody();
         File htmlPage = new File(rootDirectory + "/params_info.html");
@@ -54,7 +56,11 @@ public class Controller {
                             .append("</li>");
                 }
                 html = html.replace("{{params}}", paramsHTML.toString());
-                HttpResponse.sendResponse(request, outputStream, HttpStatusCode.OK, ContentType.HTML, html.getBytes());
+                if (request.getMethod() == HttpMethod.HEAD) {
+                    HttpResponse.sendResponseHeader(request, outputStream, HttpStatusCode.OK, ContentType.HTML, html.getBytes().length);
+                } else {
+                    HttpResponse.sendResponse(request, outputStream, HttpStatusCode.OK, ContentType.HTML, html.getBytes());
+                }
             } else {
                 HttpResponse.sendErrorResponse(request, outputStream, HttpStatusCode.NOT_FOUND);
             }
@@ -65,6 +71,7 @@ public class Controller {
 
     @GET("/params_info.html")
     @POST("/params_info.html")
+    @HEAD("/params_info.html")
     public void getparamsInfo(HttpRequest request, String rootDirectory, OutputStream outputStream) {
         Map params = request.getBody();
         File htmlPage = new File(rootDirectory + "/params_info.html");
@@ -84,7 +91,11 @@ public class Controller {
                             .append("</li>");
                 }
                 html = html.replace("{{params}}", paramsHTML.toString());
-                HttpResponse.sendResponse(request, outputStream, HttpStatusCode.OK, ContentType.HTML, html.getBytes());
+                if (request.getMethod() == HttpMethod.HEAD) {
+                    HttpResponse.sendResponseHeader(request, outputStream, HttpStatusCode.OK, ContentType.HTML, html.getBytes().length);
+                } else {
+                    HttpResponse.sendResponse(request, outputStream, HttpStatusCode.OK, ContentType.HTML, html.getBytes());
+                }
             } else {
                 HttpResponse.sendErrorResponse(request, outputStream, HttpStatusCode.NOT_FOUND);
             }
@@ -94,12 +105,21 @@ public class Controller {
     }
 
     @GET("/*")
-    public void getFile(HttpRequest request, OutputStream outputStream, File requestedFile) {
+    public void getFile(HttpRequest request, String rootDirectory, OutputStream outputStream, File requestedFile) {
         ContentType contentType = ContentType.fromString(requestedFile.toString().substring(requestedFile.toString().lastIndexOf(".") + 1));
         try {
-            if (requestedFile.exists()) {
-                byte[] content = Files.readAllBytes(requestedFile.toPath());
-                HttpResponse.sendResponse(request, outputStream, HttpStatusCode.OK, contentType, content);
+            // Check if it both exist and is a file
+            if (requestedFile.exists() && requestedFile.isFile()) {
+                String reqResourceCanonicalPath = requestedFile.getCanonicalPath();
+                if (reqResourceCanonicalPath.startsWith(rootDirectory))
+                {
+                    byte[] content = Files.readAllBytes(requestedFile.toPath());
+                    HttpResponse.sendResponse(request, outputStream, HttpStatusCode.OK, contentType, content);
+                }
+                else {
+                    System.out.println("Invalid file path");
+                    HttpResponse.sendErrorResponse(request, outputStream, HttpStatusCode.NOT_FOUND);
+                }
             } else {
                 HttpResponse.sendErrorResponse(request, outputStream, HttpStatusCode.NOT_FOUND);
             }
@@ -109,10 +129,27 @@ public class Controller {
     }
 
     @HEAD("/*")
-    public void head(HttpRequest request, OutputStream outputStream, File requestedFile) {
+    public void getHeaders(HttpRequest request, String rootDirectory, OutputStream outputStream, File requestedFile) {
         ContentType contentType = ContentType.fromString(requestedFile.toString().substring(requestedFile.toString().lastIndexOf(".") + 1));
-        int contentLength = (int) requestedFile.length();
-        HttpResponse.sendResponseHeader(request, outputStream, HttpStatusCode.OK, contentType, contentLength);
+        try {
+            // Check if it both exist and is a file
+            if (requestedFile.exists() && requestedFile.isFile()) {
+                String reqResourceCanonicalPath = requestedFile.getCanonicalPath();
+                // Path Traversal Attack
+                if (reqResourceCanonicalPath.startsWith(rootDirectory))
+                {
+                    HttpResponse.sendResponseHeader(request, outputStream, HttpStatusCode.OK, contentType, (int)requestedFile.length());
+                }
+                else {
+                    System.out.println("PATH TRAVERSAL ATTACK");
+                    HttpResponse.sendErrorResponse(request, outputStream, HttpStatusCode.NOT_FOUND);
+                }
+            } else {
+                HttpResponse.sendErrorResponse(request, outputStream, HttpStatusCode.NOT_FOUND);
+            }
+        } catch (IOException e) {
+            HttpResponse.sendErrorResponse(request, outputStream, HttpStatusCode.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @TRACE("/*")
@@ -131,6 +168,6 @@ public class Controller {
             }
         }
         byte[] response = requestBuilder.toString().getBytes();
-        HttpResponse.sendResponse(request, outputStream, HttpStatusCode.OK, ContentType.TEXT, response);
+        HttpResponse.sendResponse(request, outputStream, HttpStatusCode.OK, ContentType.MESSAGE_HTTP, response);
     }
 }

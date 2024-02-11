@@ -2,10 +2,13 @@ package server;
 
 import exceptions.HttpParsingException;
 import http.HttpRequest;
+import http.HttpResponse;
 import routing.Router;
 import utils.HttpRequestParser;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 public class ClientConnectionHandler extends Thread {
@@ -50,12 +53,14 @@ public class ClientConnectionHandler extends Thread {
     private void handleRequest() throws IOException {
         byte[] requestBytes = new byte[inputStream.available()];
         requestBytes = inputStream.readNBytes(requestBytes.length);
+        String clientAddress = clientSocket.getInetAddress().getHostAddress() + ":" + clientSocket.getPort();
+        System.out.println("New request From " + clientAddress + ":");
+
         try {
-            String clientAddress = clientSocket.getInetAddress().getHostAddress() + ":" + clientSocket.getPort();
             HttpRequest httpRequest = requestParser.parseHttpRequest(requestBytes, clientAddress);
             if (httpRequest != null) {
                 StringBuilder request = new StringBuilder();
-                request.append("New request From ").append(clientAddress).append(":\r\n").append(httpRequest.getMethod()).append(" ").append(httpRequest.getRequestTarget()).append(" ").append(httpRequest.getVersion()).append("\r\n");
+                request.append(httpRequest.getMethod()).append(" ").append(httpRequest.getRequestTarget()).append(" ").append(httpRequest.getVersion()).append("\r\n");
                 for (String header : httpRequest.getHeaders().keySet()) {
                     request.append(header).append(": ").append(httpRequest.getHeaders().get(header)).append("\r\n");
                 }
@@ -63,7 +68,10 @@ public class ClientConnectionHandler extends Thread {
                 router.router(httpRequest, outputStream);
             }
         } catch (HttpParsingException e) {
-            throw new RuntimeException(e);
+            String request = new String(requestBytes);
+            System.out.println(request);
+            System.out.println("Request Parsing FAILED!\r\n");
+            HttpResponse.sendErrorResponseFailedParseRequest(clientAddress, outputStream, e.getErrorCode());
         }
     }
 
