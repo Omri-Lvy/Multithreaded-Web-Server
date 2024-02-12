@@ -168,6 +168,6 @@ public class Controller {
             }
         }
         byte[] response = requestBuilder.toString().getBytes();
-        HttpResponse.sendResponse(request, outputStream, HttpStatusCode.OK, ContentType.MESSAGE_HTTP, response);
+        HttpResponse.sendResponse(request, outputStream, HttpStatusCode.OK, ContentType.DEFAULT, response);
     }
 }

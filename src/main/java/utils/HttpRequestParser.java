@@ -121,6 +121,11 @@ public class HttpRequestParser {
     private void parseBody ( InputStreamReader reader, HttpRequest request ) throws IOException, HttpParsingException {
         String contentLengthHeader = request.getHeader("Content-Length");
         String contentTypeHeader = request.getHeader("Content-Type");
+        if (request.getRequestTarget().contains("?")) {
+            request.setBody(parseURLParams(request.getRequestTarget()));
+            String requestTarget = request.getRequestTarget().substring(0, request.getRequestTarget().indexOf("?"));
+            request.setRequestTarget(requestTarget);
+        }
         if (contentLengthHeader != null) {
             try {
                 int contentLength = Integer.parseInt(contentLengthHeader);
@@ -146,12 +151,6 @@ public class HttpRequestParser {
             } catch (NumberFormatException e) {
                 // Handle the case where Content-Length is not a valid integer
                 throw new HttpParsingException(HttpStatusCode.BAD_REQUEST);
-            }
-        } else {
-            if (request.getRequestTarget().contains("?")) {
-                request.setBody(parseURLParams(request.getRequestTarget()));
-                String requestTarget = request.getRequestTarget().substring(0, request.getRequestTarget().indexOf("?"));
-                request.setRequestTarget(requestTarget);
             }
         }
     }

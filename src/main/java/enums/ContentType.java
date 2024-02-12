@@ -8,7 +8,6 @@ public enum ContentType {
     BMP("image/bmp"),
     GIF("image/gif"),
     ICO("image/x-icon"),
-    MESSAGE_HTTP("message/http"),
     DEFAULT("application/octet-stream");
 
     private final String contentType;
