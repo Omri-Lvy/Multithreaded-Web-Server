@@ -126,7 +126,7 @@ public class HttpRequestParser {
             String requestTarget = request.getRequestTarget().substring(0, request.getRequestTarget().indexOf("?"));
             request.setRequestTarget(requestTarget);
         }
-        if (contentLengthHeader != null) {
+        if (contentLengthHeader != null && Integer.parseInt(contentLengthHeader) != 0) {
             try {
                 int contentLength = Integer.parseInt(contentLengthHeader);
                 char[] bodyData = new char[contentLength];
@@ -165,10 +165,14 @@ public class HttpRequestParser {
             if (keyValue.length == 2) {
                 String key = URLDecoder.decode(keyValue[0], StandardCharsets.UTF_8);
                 String value = URLDecoder.decode(keyValue[1], StandardCharsets.UTF_8);
-                formData.put(key, value);
+                if (!key.isEmpty()) {
+                    formData.put(key, value);
+                }
             } else {
                 String key = URLDecoder.decode(keyValue[0], StandardCharsets.UTF_8);
-                formData.put(key, "");
+                if (!key.isEmpty()) {
+                    formData.put(key, "");
+                }
             }
         }
 
@@ -181,16 +185,17 @@ public class HttpRequestParser {
 
         for (String pair : pairs) {
             String[] keyValue = pair.split(":");
-            if (keyValue[0].equals("{") || keyValue[0].equals("}")) {
-                continue;
-            }
             if (keyValue.length == 2) {
                 String key = URLDecoder.decode(removeQuotes(keyValue[0]), StandardCharsets.UTF_8);
                 String value = URLDecoder.decode(removeQuotes(keyValue[1]), StandardCharsets.UTF_8);
-                bodyFields.put(key, value);
+                if (!key.isEmpty()) {
+                    bodyFields.put(key, value);
+                }
             } else {
                 String key = URLDecoder.decode(keyValue[0].replaceAll("\"",""), StandardCharsets.UTF_8);
-                bodyFields.put(key, "");
+                if (!key.isEmpty()) {
+                    bodyFields.put(key, "");
+                }
             }
         }
 
@@ -206,10 +211,14 @@ public class HttpRequestParser {
             if (keyValue.length == 2) {
                 String key = URLDecoder.decode(removeQuotes(keyValue[0]), StandardCharsets.UTF_8);
                 String value = URLDecoder.decode(removeQuotes(keyValue[1]), StandardCharsets.UTF_8);
-                formData.put(key, value);
+                if (!key.isEmpty()) {
+                    formData.put(key, value);
+                }
             } else {
                 String key = URLDecoder.decode(keyValue[0].substring(1, keyValue[0].length() - 2), StandardCharsets.UTF_8);
-                formData.put(key, "");
+                if (!key.isEmpty()) {
+                    formData.put(key, "");
+                }
             }
         }
 

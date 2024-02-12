@@ -105,6 +105,7 @@ public class Controller {
     }
 
     @GET("/*")
+    @POST("/*")
     public void getFile(HttpRequest request, String rootDirectory, OutputStream outputStream, File requestedFile) {
         ContentType contentType = ContentType.fromString(requestedFile.toString().substring(requestedFile.toString().lastIndexOf(".") + 1));
         try {

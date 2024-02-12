@@ -66,7 +66,6 @@ public class Router {
             handler = routes.get(request.getMethod().toString()+"/*");
         }
 
-        // Unsure if needed
         if (handler == null) {
             sendErrorResponse(request, outputStream, HttpStatusCode.INTERNAL_SERVER_ERROR);
             return;
@@ -105,7 +104,7 @@ public class Router {
             }
             Method methodToInvoke = null;
             Object[] args = null;
-            if (request.getMethod().equals(HttpMethod.GET)) {
+            if (request.getMethod().equals(HttpMethod.GET) || request.getMethod().equals(HttpMethod.POST)) {
                 args = new Object[] {request, rootDirectory, outputStream, requestedResource};
                 methodToInvoke = handler.getClass().getMethod("getFile", HttpRequest.class, String.class, OutputStream.class, File.class);
             } else if (request.getMethod().equals(HttpMethod.HEAD)) {
